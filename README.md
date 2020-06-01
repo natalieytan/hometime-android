@@ -1,3 +1,34 @@
+# Thought process on how to approch this:
+
+## Problems with the existing app architecture
+* Too much logic & state stored in the activity  - no separation of concerns
+* On first load, no data is served until the refresh button is clicked
+* No lifecycle handling (e.g. on saveInstanceState) - state is lost when device rotates
+* ApiClient repeatedly created on refreshClick. This is an expensive operation
+* New token requested each time, creating unnecessary network request
+* Errors not handled gracefully - only handing of error is to print stack trace & end user has no feedback as to if anything went wrong
+* AsyncTask used with `.get()` instead of `onPostExecute` , this causes blocking on the UI thread
+* No null safety. If either of the tramList returns null, showTrams is unable to iterate through the trams and throws an error.
+* Using appcompat-v7 (Version 28 is the last of legacy support library)
+
+## How I might solve the above problems
+* Introduce ViewModel + MVVM pattern
+* Create a single AI Client
+* Cache the network token (probably use saved preferences)
+* Handle the errors gracefully, with feedback to the user for the following states:
+	* Loading
+	* Error
+	* No trams
+* Async handling options to consider
+	* Update AsyncTask to onPostExecute (but google docs says AsyncTask was deprecated on API level R)
+	* Use retrofit's default callback with .enqueue
+	* Utilise coroutines (I'll use this)
+* Load data into a live data on ViewModel initialisation, Activity can subscribe & update UI on first load
+* Other improvements
+	* Convert project to Kotlin (null safety)
+	* Improvements to UI
+* Upgrade grade wrapper build tools and migrate to androidx
+
 __**HomeTime - Android**__
 ==================
 
