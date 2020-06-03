@@ -8,5 +8,7 @@ data class Tram(
     @Json(name = "PredictedArrivalDateTime")
     val predictedArrival: String? = null,
     @Json(name = "RouteNo")
-    val routeNo: String? = null
+    val routeNo: String? = null,
+    @Json(name= "VehicleNo")
+    val vehicleNo: Int? = null
 )
