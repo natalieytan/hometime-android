@@ -21,37 +21,31 @@ class HomeTimeActivity : AppCompatActivity() {
         buttonClear.setOnClickListener { viewModel.clear() }
         buttonRefresh.setOnClickListener { viewModel.refresh() }
 
+        val adapter = HomeTimeAdapter()
+        recyclerViewHomeTime.adapter = adapter
+
         viewModel.apiStatus.observe(this, Observer { apiStatus ->
             when (apiStatus.state) {
                 ApiStatus.State.LOADING -> {
                     loader.visibility = View.VISIBLE
                     error.visibility = View.GONE
-                    results.visibility = View.GONE
-                    cleared.visibility = View.GONE
+                    recyclerViewHomeTime.visibility = View.GONE
                 }
                 ApiStatus.State.ERROR -> {
                     loader.visibility = View.GONE
                     error.visibility = View.VISIBLE
-                    results.visibility = View.GONE
-                    cleared.visibility = View.GONE
+                    recyclerViewHomeTime.visibility = View.GONE
                 }
-                ApiStatus.State.DONE -> {
+                ApiStatus.State.DONE, ApiStatus.State.CLEARED -> {
                     loader.visibility = View.GONE
                     error.visibility = View.GONE
-                    results.visibility = View.VISIBLE
-                    cleared.visibility = View.GONE
-                }
-                ApiStatus.State.CLEARED -> {
-                    loader.visibility = View.GONE
-                    error.visibility = View.GONE
-                    results.visibility = View.GONE
-                    cleared.visibility = View.VISIBLE
+                    recyclerViewHomeTime.visibility = View.VISIBLE
                 }
             }
         })
 
         viewModel.trams.observe(this, Observer { trams ->
-            results.text = "These are the results $trams. I'll put in a pretty recycler view for you soon."
+            adapter.submitList(trams)
         })
     }
 }
