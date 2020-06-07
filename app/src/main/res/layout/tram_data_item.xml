@@ -1,10 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
     <TextView
-        android:id="@+id/textViewTramNumber"
+        android:id="@+id/textViewTramId"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-</LinearLayout>
+        android:layout_height="wrap_content"
+        android:drawableTop="@drawable/ic_tram"
+        android:padding="4dp"
+        android:textAlignment="center"
+        android:textColor="@color/secondary_text"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="1234" />
+
+    <TextView
+        android:id="@+id/textViewTramRoute"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:background="@color/primary_dark"
+        android:gravity="center"
+        android:padding="8dp"
+        android:textColor="@color/highlight"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/textViewTramId"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="78" />
+
+    <TextView
+        android:id="@+id/textViewDestination"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="4dp"
+        android:textColor="@color/primary_text"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@id/textViewTramRoute"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="North Richmond" />
+
+    <TextView
+        android:id="@+id/textViewArrivalTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="2dp"
+        android:textColor="@color/secondary_text"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="@id/textViewDestination"
+        app:layout_constraintTop_toBottomOf="@id/textViewDestination"
+        tools:text="6 Jun 8:30 AM" />
+
+    <TextView
+        android:id="@+id/textViewMinutesAway"
+        android:layout_width="100dp"
+        android:layout_height="0dp"
+        android:background="@color/shadow"
+        android:gravity="center"
+        android:padding="12dp"
+        android:textColor="@color/highlight"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="3 mins" />
+</androidx.constraintlayout.widget.ConstraintLayout>
