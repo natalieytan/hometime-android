@@ -10,8 +10,17 @@ import au.com.realestate.hometime.R
 class TramItemViewHolder private constructor(itemView: View) :
     RecyclerView.ViewHolder(itemView) {
     fun bind(tramDataItem: HomeTimeDataItem.TramDataItem) {
-        val tramText: TextView = itemView.findViewById(R.id.textViewTramNumber)
-        tramText.text = tramDataItem.tram.vehicleNo.toString()
+        val tramId: TextView = itemView.findViewById(R.id.textViewTramId)
+        val tramText: TextView = itemView.findViewById(R.id.textViewTramRoute)
+        val arrivalTime: TextView = itemView.findViewById(R.id.textViewArrivalTime)
+        val minutesAway: TextView = itemView.findViewById(R.id.textViewMinutesAway)
+        val destination: TextView = itemView.findViewById(R.id.textViewDestination)
+
+        tramId.text = tramDataItem.tramId
+        tramText.text = tramDataItem.tramRoute
+        arrivalTime.text = tramDataItem.arrivalDate
+        minutesAway.text = tramDataItem.displayArrivalTime
+        destination.text = tramDataItem.destination
     }
 
     companion object {

@@ -11,7 +11,7 @@ class ClearedDataItemViewHolder private constructor(itemView: View) :
     RecyclerView.ViewHolder(itemView) {
     fun bind(item: HomeTimeDataItem.ClearedDataItem) {
         val headerText: TextView = itemView.findViewById(R.id.textViewNoData)
-        headerText.text = "You cleared the data, remember?"
+        headerText.text = "Data cleared.\nRefresh for more trams."
     }
 
     companion object {

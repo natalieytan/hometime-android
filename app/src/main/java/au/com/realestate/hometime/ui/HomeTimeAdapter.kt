@@ -6,6 +6,10 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import au.com.realestate.hometime.models.Tram
 import au.com.realestate.hometime.models.TramStop
+import au.com.realestate.hometime.utils.TimeUtils.dateString
+import au.com.realestate.hometime.utils.TimeUtils.formattedDisplay
+import au.com.realestate.hometime.utils.TimeUtils.timeDifferenceFromNowInMinutes
+import au.com.realestate.hometime.utils.TimeUtils.timeFromUnixTime
 
 class HomeTimeAdapter :
     ListAdapter<HomeTimeDataItem, RecyclerView.ViewHolder>(HomeTimeDiffCallBack()) {
@@ -68,14 +72,26 @@ object HomeTimeDataItemTypes {
 }
 
 sealed class HomeTimeDataItem {
-    data class TramStopHeaderItem(val tramStop: TramStop) : HomeTimeDataItem() {
+    class TramStopHeaderItem(tramStop: TramStop) : HomeTimeDataItem() {
         override val itemId = HomeTimeDataItemTypes.TRAM_STOP_HEADER
         override val dataId = tramStop.id
+
+        val stopName = tramStop.name
     }
 
-    data class TramDataItem(val tram: Tram) : HomeTimeDataItem() {
+    class TramDataItem(tram: Tram) : HomeTimeDataItem() {
         override val itemId = HomeTimeDataItemTypes.TRAM_DATA
         override val dataId = tram.vehicleNo
+
+        private val currentTimeEpochSeconds = tram.predictedArrival?.let { timeFromUnixTime(it) }
+        private val minutesAway = currentTimeEpochSeconds?.let { timeDifferenceFromNowInMinutes(it) }
+
+
+        val tramId = "#${tram.vehicleNo?.toString()?.padStart(3, '0')}"
+        val tramRoute = tram.routeNo
+        val destination = tram.destination
+        val displayArrivalTime = minutesAway?.let { formattedDisplay(it) }
+        val arrivalDate = currentTimeEpochSeconds?.let { dateString(it) }
     }
 
     object TramsNotFoundItem : HomeTimeDataItem() {
