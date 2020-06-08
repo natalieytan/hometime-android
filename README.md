@@ -1,5 +1,10 @@
 # Home Time Android
 
+## Background
+* As part of the REA 6.0 Grad Program, I was able to do the Android Bootcamp in November 2019, and was subsequently inspired to do a Mobile Rotation (Ignite App Feb 2020 - May 2020). Doing the HomeTime App as one of my commitments, and now having 4 months of solid app rotation under my belt, I'm giving it a crack.
+* Some of the patterns used are things I've learnt from my rotation / bootcamp
+* While some of the others are things that I've been reading about and am keen to try out in a side project (ListAdapter, DiffCallback, Coroutines)
+
 ## Thought processes about problems with the existing app architecture
 * Too much logic & state stored in the activity  - no separation of concerns
 * On first load, no data is served until the refresh button is clicked
@@ -83,14 +88,14 @@ Rightfully, if we inspected the error messages, we should include handling of cl
 * Using ViewModel allows data to persist, independent of activity life cycle, until activity is destroyed, saving the hassle of implemeting `onSaveInstanceState` in the Activity
 
 ### ListAdapter + DiffCallback
-* Used this as a chance to experiment with ListAdapter (usuaully use RecyclerView.Adapter which)
+* Used this as a chance to experiment with ListAdapter 
 * The [DiffUtil](https://developer.android.com/reference/androidx/recyclerview/widget/DiffUtil) provides a nice algorithm to calculate the minimal number of updates to convert one list into another
-* When the ListAdapter is passed the DiffUtil callback, able to get nice animations & efficient updates to the recyclerView for free (rather than re-rendering the entire list via notifyDataSetChanged)
+* When the ListAdapter is passed the DiffUtil callback, we are able to get nice animations & efficient updates to the recyclerView for free (rather than re-rendering the entire list via notifyDataSetChanged)
 
 ### Coroutines
 * Used this as a chance to experiment with corotuines
-* Using coroutines, allows easily asynchronously calling multiple network requests (e.g. north & south trams), and fail immediately to the catch block if any of the network requests fail 
-* Using coroutines also allows cancellation the network calls if the ViewModel is destroyed, via job cancellation in the onCleared ViewModel lifecycle
+* Using coroutines allows us to easily asynchronously call multiple network requests (e.g. north & south trams), and fail immediately to the if any of the network requests fail 
+* Using coroutines also allows cancellation of the network calls if the ViewModel is destroyed, via job cancellation in the onCleared ViewModel lifecycle
 * With the new coroutine pattern, I'm still trying to discover what is the best architectural pattern & how to write unite tests for the repo & ViewModel. Stay tuned!
 
 ## App previews
