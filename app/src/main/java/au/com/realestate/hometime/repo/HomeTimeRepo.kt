@@ -4,20 +4,25 @@ import au.com.realestate.hometime.datastore.TokenDataStore
 import au.com.realestate.hometime.models.ApiResponse
 import au.com.realestate.hometime.models.Tram
 import au.com.realestate.hometime.network.TramTrackerApi
+import au.com.realestate.hometime.network.TramTrackerApiService
+import java.io.IOException
 
 interface HomeTimeRepoType {
     suspend fun getTrams(tramStop: Int, tramId: Int): ApiResponse<Tram>
 }
 
-class HomeTimeRepo(private val tokenDataStore: TokenDataStore) : HomeTimeRepoType {
+class HomeTimeRepo(private val tokenDataStore: TokenDataStore, private val apiService: TramTrackerApiService) : HomeTimeRepoType {
     companion object {
         val instance: HomeTimeRepoType by lazy {
-            HomeTimeRepo(TokenDataStore.instance)
+            HomeTimeRepo(
+                TokenDataStore.instance,
+                TramTrackerApi.retrofitService
+            )
         }
     }
 
     override suspend fun getTrams(tramStop: Int, tramId: Int): ApiResponse<Tram> {
-        return TramTrackerApi.retrofitService.getTrams(
+        return apiService.getTrams(
             tramStop,
             tramId,
             getCachedToken()
@@ -32,9 +37,12 @@ class HomeTimeRepo(private val tokenDataStore: TokenDataStore) : HomeTimeRepoTyp
     }
 
     private suspend fun getAndCacheToken(): String {
-        val token = TramTrackerApi.retrofitService.getToken().responseObject?.firstOrNull()?.value
-            ?: "default_token"
-        tokenDataStore.setTramTrackerToken(token)
-        return token
+        when(val token = apiService.getToken().responseObject?.firstOrNull()?.value) {
+            null -> throw IOException("Unable to fetch token")
+            else -> {
+                tokenDataStore.setTramTrackerToken(token)
+                return token
+            }
+        }
     }
 }
