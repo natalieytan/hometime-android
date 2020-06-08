@@ -1,6 +1,6 @@
-# Thought process on how to approch this:
+# Home Time Android
 
-## Problems with the existing app architecture
+## Thought processes about problems with the existing app architecture
 * Too much logic & state stored in the activity  - no separation of concerns
 * On first load, no data is served until the refresh button is clicked
 * No lifecycle handling (e.g. on saveInstanceState) - state is lost when device rotates
@@ -8,12 +8,14 @@
 * New token requested each time, creating unnecessary network request
 * Errors not handled gracefully - only handing of error is to print stack trace & end user has no feedback as to if anything went wrong
 * AsyncTask used with `.get()` instead of `onPostExecute` , this causes blocking on the UI thread
+* 2 blocking network requests made back to back
 * No null safety. If either of the tramList returns null, showTrams is unable to iterate through the trams and throws an error.
 * Using appcompat-v7 (Version 28 is the last of legacy support library)
+* Date parsing is reliant on exact positions within the string
 
-## How I might solve the above problems
+## Thoughts about how to solve the problems with existing architecture
 * Introduce ViewModel + MVVM pattern
-* Create a single AI Client
+* Create a single API Client using singleton pattern
 * Cache the network token (probably use saved preferences)
 * Handle the errors gracefully, with feedback to the user for the following states:
 	* Loading
@@ -22,103 +24,99 @@
 * Async handling options to consider
 	* Update AsyncTask to onPostExecute (but google docs says AsyncTask was deprecated on API level R)
 	* Use retrofit's default callback with .enqueue
-	* Utilise coroutines (I'll use this)
-* Load data into a live data on ViewModel initialisation, Activity can subscribe & update UI on first load
+	* Utilise coroutines (I'll use this, as I'm keen to experiment with this)
+* Load data into a live data on ViewModel initialisation, activity can subscribe & update UI on first load
 * Other improvements
 	* Convert project to Kotlin (null safety)
 	* Improvements to UI
-* Upgrade grade wrapper build tools and migrate to androidx
+* Upgrade gradle wrapper build tools and migrate to androidx
+* Utilise regex capture groups for date parsing
 
-__**HomeTime - Android**__
-==================
+## Some considerations
+### 1. How should we handle errors?
+* To load the data for each activity we need to make at least 2 network calls. 1 for north trams, 1 for south trams, and 1 for the token if it was not already cached. 
+* There was a consideration that needed to be made regarding the handling if only 1 request failed (e.g. north API fails, but not south), should display an Activity with partial data (e.g. South Trams only) with an error for North, or do we fail the whole page?
+* Additionally, apart from displaying the error to the user, it would be good to consider if additional behaviour with errors, such as logging is required
+* Ideally such requirements are clarified with the team
+* For the purposes of this app, we will follow the behaviour of the existing app (1 fails, all fails)
+* Errors will be displayed to user, but no additional handling (e.g. logging), nor differentiation between errors (e.g. network connectivity v.s. server error) will be implemented
 
-This repository contains a simple sample app using the Tram Tracker API to be used as a coding assignment for REA mobile (Android) developer candidates.
-
-__**Existing Functionality**__
-
-
-The app is hard coded to show the next upcoming trams going *north* and *south* outside the REA office on Church St - when the `REFRESH` button is pressed.
-
-* When the app loads, the table shows the empty state,  no timetable information has already been loaded
-* When you tap 'Refresh', the app retrieves the upcoming trams from the API both both north and south and places the dates in the list
-* There isn't any proper error handling, if an error occurs, we just log it and move on
-
-__**Existing Android Code**__
-
-This application is written in Java. This is not meant to be an example of how code should be written, but rather an opportunity to think about better ways of breaking down and structuring code in a simple context.
-
-The `MainActivity` keeps the retrieved tram data in two `List` properties, `northTrams` and `southTrams`, which are initially `null`.
-
-Button click event handlers are also implemented here, as well as Networking code implemented using Retrofit.
-
-The `main_layout` defines two `ListView` to display the *north* and *south* trams, as well as the `REFRESH` and `CLEAR` buttons
-
-
-__**Coding Task**__
------------
-
-The functionality is mostly complete (error handling has been largely ignored). The code does not follow best practices and, as features are added, isn't going to be maintainable. __We would like you to look at some ways of improving the code quality, to make it easier to maintain and easier to test.__
-
-Feel free to implement in Kotlin, or use other techniques to handle async (i.e. Rx-Java), however this is not a requirement.
-
-Show us your __UX__ chops, and make the user interface more elegant.
-
-Don't feel like you have to fix every issue you see in the code.
-
-With a better code structure in place, try adding a small piece of functionality. For example, instead of just showing the time for the next tram (eg. *9:23 am*), it could also show how far away that is from the current time (eg. *9:23 am (3 min)*)
-
----
-
-__Tram Tracker API__
-
-This app uses the same API as the Tram Tracker app, but it's not an officially public API so there is a chance it'll just stop working at some stage. It's more fun to use a real API though. To use the tram tracker API, you need to first connect with an endpoint that gives you an API token. That token can then be used for future calls.
-
-To retrieve an API token, you hit this endpoint `http://ws3.tramtracker.com.au/TramTracker/RestService/GetDeviceToken/?aid=TTIOSJSON&devInfo=HomeTimeiOS` and retrieve the token from the response. The app id and dev info parameters have been coded in for you, as these should not need to change.
-
+### 2. The response may have a `hasError` field, which we are ignoring
+According to the instructions:
 ```
-{
-  errorMessage: null,
-  hasError: false,
-  hasResponse: true,
-  responseObject: [
-    {
-      DeviceToken: "some-valid-device-token"
-    }
-  ]
-}
-```
-
-We can then use this device token to retrieve the upcoming trams. The route ID and stop IDs that we pass to the API have been hard coded for you to represent the tram stops on either side of the road. The endpoint that retrieves the tram (with stop ID and token replaced with valid values) will be of the form `http://ws3.tramtracker.com.au/TramTracker/RestService/GetNextPredictedRoutesCollection/{STOP_ID}/78/false/?aid=TTIOSJSON&cid=2&tkn={TOKEN}`, returns the upcoming trams in the form:
-
-```
-{
-  errorMessage: null,
-  hasError: false,
-  hasResponse: true,
-  responseObject: [
-    {
-      Destination: "North Richmond",
-      PredictedArrivalDateTime: "/Date(1425407340000+1100)/",
-      RouteNo: "78"
-    },
-    {
-      Destination: "North Richmond",
-      PredictedArrivalDateTime: "/Date(1425408480000+1100)/",
-      RouteNo: "78"
-    },
-    {
-      Destination: "North Richmond",
-      PredictedArrivalDateTime: "/Date(1425409740000+1100)/",
-      RouteNo: "78"
-    }
-  ]
-}
-```
-
-The dates returned look like they're in a strange .NET format, rather than something friendly and widely used like ISO8601. There is a function
-```
-  Date dateFromDotNetDate(String dotNetDate)
-```
-to convert these strings into `Date` objects that we can use in the app.
-
 You'll notice it's one of those APIs that sometimes gives you error messages inside a valid JSON response. We ignore this for now and assume that a `200` response means that the data will be on the `responseObject` field.
+```
+Hence I will ignore the hasError field & assume that I always get a successful resposne
+
+### 3. In theory, the token may be invalidated
+We cache the token to reduce network requests. Following the instuctions to assume all `200` as success, we will also be ignoring messages such as this:
+```
+"errorMessage": "No or invalid device token provided.",
+  "hasError": true,
+```
+Rightfully, if we inspected the error messages, we should include handling of clearing & updating the token. However, as per the instructions this particular path will be ignored & this will be treated as a known flaw (as specified by the requirements).
+
+### 4. What about dependency injection?
+* Ideally, the ViewModel should not have to know about the activity's context
+* However, we run into the case of needing the context to retrieve string resources, as well as sharedPreferences
+* To work around this I have exposed the application context in a companion object.
+* If exposing the application context alone, no longer suits our needs, there are alternative DI frameworks (e.g. Dagger, Koin) that I may look into
+
+### 5. Working with time
+* To provide helpful information as suggested by the brief `show how far away that is from the current time (eg. 9:23 am (3 min))`, requires calculation of time difference between the user's current system time and the time presented by the server
+* Time calculation on the user's device is prone to error
+* E.g. if the time is set wrongly, the calculated time away will be wrong
+* Additionally, performing the calculation on the user device may result in non valid time ranges (e.g negative). In this case, I have aritrarily handled with (N/A)
+* Ideally the time for the next tram should be a server side calculation with filtering out of invalid ranges, to prevent these sorts of errors.
+* In the absence of a server side data, I have arbitrarily calculated this on the user's device
+* As per the original implementation, it is also assumed that the timezone used by the user is same as the time in the server (+1000)
+* The time till the next tram `X mins`, is relative to the time data is requested at. While time keeps progressing, this time will keep reducing.
+* One could contemplate how to contiuously refresh this ever changing data (Perhaps 1 min refresh intervals?)
+* To keep the implementation simple (and not have continuous refreshes), I have included a header to indicate when the data was last fetched.
+
+
+## Architectural / Design Choices
+### MVVM pattern
+* Adopt Android's recommended architecture
+![MVVM](https://developer.android.com/topic/libraries/architecture/images/final-architecture.png)
+* Driving UI from model allows separation of concerns, allowing easier testability
+* Using ViewModel allows data to persist, independent of activity life cycle, until activity is destroyed, saving the hassle of implemeting `onSaveInstanceState` in the Activity
+
+### ListAdapter + DiffCallback
+* Used this as a chance to experiment with ListAdapter (usuaully use RecyclerView.Adapter which)
+* The [DiffUtil](https://developer.android.com/reference/androidx/recyclerview/widget/DiffUtil) provides a nice algorithm to calculate the minimal number of updates to convert one list into another
+* When the ListAdapter is passed the DiffUtil callback, able to get nice animations & efficient updates to the recyclerView for free (rather than re-rendering the entire list via notifyDataSetChanged)
+
+### Coroutines
+* Used this as a chance to experiment with Corotuines
+* Nice to be able to asynchronously call multiple network requests (e.g. north & south trams), and fail immediately to catch block if any of the network requests fail 
+* Nice to be able to cancel the network calls if the viewmodel is destroyed in the onCleared lifecycle
+* ViewModel is now looking a bit chunky, because it now has he responsibility of owning the job and the scope
+* I have to run `tramStops.map { async { repo.getTrams(it.id, tramNumber) } }` in the ViewModel, because it needs to run within a coroutine scope.
+* ViewModel is also handling the APIResponse Errors
+* Ideally would have been nice to delegate wrapping the response errors to repo and have a wrapper class for the response
+e.g.
+```kotlin
+sealed class Resource<T>(
+   val data: T? = null,
+   val message: String? = null
+) {
+   class Success<T>(data: T) : Resource<T>(data)
+   class Loading<T>(data: T? = null) : Resource<T>(data)
+   class Error<T>(message: String, data: T? = null) : Resource<T>(data, message)
+}
+```
+* Not sure how to implement the above pattern cleanly using coroutines in the ViewModel, without losing being able to asynchronously fetch multiple requests with early exit should one fail.
+* This has been a learning experience & I am sure there is room for improvement in refactoring the architecture, as I learn more
+
+### To inject timeUtils or not to inject?
+* I'm still thinking about it
+
+### Where are my unit tests?
+* 🙈
+
+## App previews
+![Trams Data - Vertical](./docs/assets/vertical_trams_data.png)
+![Error screen](./docs/assets/vertical_oops.png)
+![Trams Data cleared](./docs/assets/vertical_data_cleared.png)
+![Trams Data - Horizontal](./docs/assets/horizontal_trams_data.png)
