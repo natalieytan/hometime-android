@@ -7,18 +7,18 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import au.com.realestate.hometime.R
 
-class ClearedDataItemViewHolder private constructor(itemView: View) :
+class NoTramsViewHolder private constructor(itemView: View) :
     RecyclerView.ViewHolder(itemView) {
-    fun bind(item: HomeTimeDataItem.ClearedDataItem) {
-        val headerText: TextView = itemView.findViewById(R.id.textViewNoData)
-        headerText.text = "Data cleared.\nRefresh for more trams."
+    fun bind(item: HomeTimeDataItem.NoTramsItem) {
+        val noDataReason: TextView = itemView.findViewById(R.id.textViewNoData)
+        noDataReason.text = item.reason
     }
 
     companion object {
-        fun from(parent: ViewGroup): ClearedDataItemViewHolder {
+        fun from(parent: ViewGroup): NoTramsViewHolder {
             val layoutInflater = LayoutInflater.from(parent.context)
             val view = layoutInflater.inflate(R.layout.tram_no_data_item, parent, false)
-            return ClearedDataItemViewHolder(view)
+            return NoTramsViewHolder(view)
         }
     }
 }

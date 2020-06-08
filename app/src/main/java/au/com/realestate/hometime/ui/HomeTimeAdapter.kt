@@ -17,8 +17,7 @@ class HomeTimeAdapter :
         return when (viewType) {
             HomeTimeDataItemTypes.TRAM_STOP_HEADER -> TramStopHeaderViewHolder.from(parent)
             HomeTimeDataItemTypes.TRAM_DATA -> TramItemViewHolder.from(parent)
-            HomeTimeDataItemTypes.TRAMS_NOT_FOUND -> TramsNotFoundItemViewHolder.from(parent)
-            HomeTimeDataItemTypes.CLEARED_DATA -> ClearedDataItemViewHolder.from(parent)
+            HomeTimeDataItemTypes.NO_TRAMS -> NoTramsViewHolder.from(parent)
             else -> throw ClassCastException("Unknown viewType $viewType")
         }
     }
@@ -33,12 +32,8 @@ class HomeTimeAdapter :
                 val item = getItem(position) as HomeTimeDataItem.TramDataItem
                 holder.bind(item)
             }
-            is TramsNotFoundItemViewHolder -> {
-                val item = getItem(position) as HomeTimeDataItem.TramsNotFoundItem
-                holder.bind(item)
-            }
-            is ClearedDataItemViewHolder -> {
-                val item = getItem(position) as HomeTimeDataItem.ClearedDataItem
+            is NoTramsViewHolder -> {
+                val item = getItem(position) as HomeTimeDataItem.NoTramsItem
                 holder.bind(item)
             }
         }
@@ -48,8 +43,7 @@ class HomeTimeAdapter :
         return when (getItem(position)) {
             is HomeTimeDataItem.TramStopHeaderItem -> HomeTimeDataItemTypes.TRAM_STOP_HEADER
             is HomeTimeDataItem.TramDataItem -> HomeTimeDataItemTypes.TRAM_DATA
-            HomeTimeDataItem.TramsNotFoundItem -> HomeTimeDataItemTypes.TRAMS_NOT_FOUND
-            HomeTimeDataItem.ClearedDataItem -> HomeTimeDataItemTypes.CLEARED_DATA
+            is HomeTimeDataItem.NoTramsItem -> HomeTimeDataItemTypes.NO_TRAMS
         }
     }
 }
@@ -67,8 +61,7 @@ class HomeTimeDiffCallBack : DiffUtil.ItemCallback<HomeTimeDataItem>() {
 object HomeTimeDataItemTypes {
     const val TRAM_STOP_HEADER = 1
     const val TRAM_DATA = 2
-    const val TRAMS_NOT_FOUND = 3
-    const val CLEARED_DATA = 4
+    const val NO_TRAMS = 3
 }
 
 sealed class HomeTimeDataItem {
@@ -94,12 +87,8 @@ sealed class HomeTimeDataItem {
         val arrivalDate = currentTimeEpochSeconds?.let { dateString(it) }
     }
 
-    object TramsNotFoundItem : HomeTimeDataItem() {
-        override val itemId = HomeTimeDataItemTypes.TRAMS_NOT_FOUND
-    }
-
-    object ClearedDataItem : HomeTimeDataItem() {
-        override val itemId = HomeTimeDataItemTypes.CLEARED_DATA
+    data class NoTramsItem(val reason: String) : HomeTimeDataItem() {
+        override val itemId = HomeTimeDataItemTypes.NO_TRAMS
     }
 
     abstract val itemId: Int

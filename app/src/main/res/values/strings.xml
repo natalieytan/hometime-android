@@ -1,3 +1,18 @@
 <resources>
-    <string name="app_name">HomeTime</string>
+    <string name="app_name">Home Time</string>
+
+    // TRAM STOPS
+    <string name="north_tram_stop">North Tram Stop</string>
+    <string name="south_tram_stop">North Tram Stop</string>
+
+    // HOME TIME BUTTONS
+    <string name="clear_button">Clear</string>
+    <string name="refresh_button">Refresh</string>
+    <string name="retry_button">Retry</string>
+
+    // HOME TIME ERROR STATE MESSAGES
+    <string name="error_message_pirmary_text">Oops. Something Went Wrong.</string>
+    <string name="unable_to_load_trams">Unable to load trams.</string>
+    <string name="tram_data_cleared">Data cleared.\nRefresh for more trams.</string>
+    <string name="trams_not_found">No trams were found.</string>
 </resources>

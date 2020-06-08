@@ -4,6 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import au.com.realestate.hometime.HomeTimeApplication
+import au.com.realestate.hometime.R
 import au.com.realestate.hometime.config.TramsConfig
 import au.com.realestate.hometime.models.ApiResponse
 import au.com.realestate.hometime.models.Tram
@@ -94,7 +96,13 @@ class HomeTimeViewModel(
         }
 
         return when (tramItems?.size) {
-            null, 0 -> listOf(tramHeader).plus(HomeTimeDataItem.TramsNotFoundItem)
+            null, 0 -> listOf(tramHeader).plus(
+                HomeTimeDataItem.NoTramsItem(
+                    HomeTimeApplication.context.getString(
+                        R.string.trams_not_found
+                    )
+                )
+            )
             else -> listOf(tramHeader).plus(tramItems)
         }
     }
@@ -102,7 +110,7 @@ class HomeTimeViewModel(
     private fun constructTramStopAndClearedItem(tramStop: TramStop): List<HomeTimeDataItem> {
         return listOf(
             HomeTimeDataItem.TramStopHeaderItem(tramStop),
-            HomeTimeDataItem.ClearedDataItem
+            HomeTimeDataItem.NoTramsItem(HomeTimeApplication.context.getString(R.string.tram_data_cleared))
         )
     }
 }
