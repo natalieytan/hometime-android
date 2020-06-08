@@ -18,6 +18,7 @@ class HomeTimeActivity : AppCompatActivity() {
             ViewModelProvider(this, HomeTimeViewModelFactory()).get(HomeTimeViewModel::class.java)
         setContentView(R.layout.activity_home_time)
 
+        buttonErrorRetry.setOnClickListener { viewModel.refresh() }
         buttonClear.setOnClickListener { viewModel.clear() }
         buttonRefresh.setOnClickListener { viewModel.refresh() }
 
@@ -27,18 +28,18 @@ class HomeTimeActivity : AppCompatActivity() {
         viewModel.apiStatus.observe(this, Observer { apiStatus ->
             when (apiStatus.state) {
                 ApiStatus.State.LOADING -> {
-                    loader.visibility = View.VISIBLE
-                    error.visibility = View.GONE
+                    progressBarHomeTime.visibility = View.VISIBLE
+                    viewError.visibility = View.GONE
                     recyclerViewHomeTime.visibility = View.GONE
                 }
                 ApiStatus.State.ERROR -> {
-                    loader.visibility = View.GONE
-                    error.visibility = View.VISIBLE
+                    progressBarHomeTime.visibility = View.GONE
+                    viewError.visibility = View.VISIBLE
                     recyclerViewHomeTime.visibility = View.GONE
                 }
                 ApiStatus.State.DONE, ApiStatus.State.CLEARED -> {
-                    loader.visibility = View.GONE
-                    error.visibility = View.GONE
+                    progressBarHomeTime.visibility = View.GONE
+                    viewError.visibility = View.GONE
                     recyclerViewHomeTime.visibility = View.VISIBLE
                 }
             }
