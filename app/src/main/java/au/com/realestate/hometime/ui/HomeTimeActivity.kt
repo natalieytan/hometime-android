@@ -21,6 +21,7 @@ class HomeTimeActivity : AppCompatActivity() {
         buttonErrorRetry.setOnClickListener { viewModel.refresh() }
         buttonClear.setOnClickListener { viewModel.clear() }
         buttonRefresh.setOnClickListener { viewModel.refresh() }
+        swipeRefreshLayout.setOnRefreshListener { viewModel.refresh() }
 
         val adapter = HomeTimeAdapter()
         recyclerViewHomeTime.adapter = adapter
@@ -28,19 +29,34 @@ class HomeTimeActivity : AppCompatActivity() {
         viewModel.apiStatus.observe(this, Observer { apiStatus ->
             when (apiStatus.state) {
                 ApiStatus.State.LOADING -> {
-                    progressBarHomeTime.visibility = View.VISIBLE
-                    viewError.visibility = View.GONE
-                    recyclerViewHomeTime.visibility = View.GONE
+                    when(swipeRefreshLayout.isRefreshing) {
+                        true -> {
+                            progressBarHomeTime.visibility = View.GONE
+                            viewError.visibility = View.GONE
+                            recyclerViewHomeTime.visibility = View.VISIBLE
+                            swipeRefreshLayout.visibility = View.VISIBLE
+                        }
+                        else -> {
+                            progressBarHomeTime.visibility = View.VISIBLE
+                            viewError.visibility = View.GONE
+                            recyclerViewHomeTime.visibility = View.GONE
+                            swipeRefreshLayout.visibility = View.GONE
+                        }
+                    }
                 }
                 ApiStatus.State.ERROR -> {
                     progressBarHomeTime.visibility = View.GONE
                     viewError.visibility = View.VISIBLE
                     recyclerViewHomeTime.visibility = View.GONE
+                    swipeRefreshLayout.visibility = View.GONE
+                    swipeRefreshLayout.isRefreshing = false
                 }
                 ApiStatus.State.DONE, ApiStatus.State.CLEARED -> {
                     progressBarHomeTime.visibility = View.GONE
                     viewError.visibility = View.GONE
                     recyclerViewHomeTime.visibility = View.VISIBLE
+                    swipeRefreshLayout.visibility = View.VISIBLE
+                    swipeRefreshLayout.isRefreshing = false
                 }
             }
         })
