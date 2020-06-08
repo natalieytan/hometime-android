@@ -5,12 +5,17 @@ import java.util.*
 
 object TimeUtils {
     private val UNIX_TIME_PATTERN = "(\\d+)\\+(\\d{4})".toRegex()
-    private val TIME_FORMATTER = SimpleDateFormat("d MMMM h:m a")
+    private val TIME_FORMATTER = SimpleDateFormat("d MMMM h:mm a")
     private const val MILLISECONDS_IN_A_MINUTE = 60000
 
     fun timeFromUnixTime(dateString: String): Long? {
         return UNIX_TIME_PATTERN
             .find(dateString)?.groups?.get(1)?.value?.toLong()
+    }
+
+    fun currentTime(): String {
+        val currentTimeInMilliseconds = Calendar.getInstance().timeInMillis
+        return dateString(currentTimeInMilliseconds)
     }
 
     fun timeDifferenceFromNowInMinutes(timeInMilliseconds: Long): Int {

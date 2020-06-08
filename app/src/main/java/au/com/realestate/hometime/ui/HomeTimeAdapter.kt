@@ -18,6 +18,7 @@ class HomeTimeAdapter :
             HomeTimeDataItemTypes.TRAM_STOP_HEADER -> TramStopHeaderViewHolder.from(parent)
             HomeTimeDataItemTypes.TRAM_DATA -> TramItemViewHolder.from(parent)
             HomeTimeDataItemTypes.NO_TRAMS -> NoTramsViewHolder.from(parent)
+            HomeTimeDataItemTypes.LAST_UPDATED_TIME_HEADER -> LastUpdatedTimeViewHolder.from(parent)
             else -> throw ClassCastException("Unknown viewType $viewType")
         }
     }
@@ -36,6 +37,10 @@ class HomeTimeAdapter :
                 val item = getItem(position) as HomeTimeDataItem.NoTramsItem
                 holder.bind(item)
             }
+            is LastUpdatedTimeViewHolder -> {
+                val item = getItem(position) as HomeTimeDataItem.LastUpdatedTime
+                holder.bind(item)
+            }
         }
     }
 
@@ -44,6 +49,7 @@ class HomeTimeAdapter :
             is HomeTimeDataItem.TramStopHeaderItem -> HomeTimeDataItemTypes.TRAM_STOP_HEADER
             is HomeTimeDataItem.TramDataItem -> HomeTimeDataItemTypes.TRAM_DATA
             is HomeTimeDataItem.NoTramsItem -> HomeTimeDataItemTypes.NO_TRAMS
+            is HomeTimeDataItem.LastUpdatedTime -> HomeTimeDataItemTypes.LAST_UPDATED_TIME_HEADER
         }
     }
 }
@@ -62,6 +68,7 @@ object HomeTimeDataItemTypes {
     const val TRAM_STOP_HEADER = 1
     const val TRAM_DATA = 2
     const val NO_TRAMS = 3
+    const val LAST_UPDATED_TIME_HEADER = 4
 }
 
 sealed class HomeTimeDataItem {
@@ -89,6 +96,10 @@ sealed class HomeTimeDataItem {
 
     data class NoTramsItem(val reason: String) : HomeTimeDataItem() {
         override val itemId = HomeTimeDataItemTypes.NO_TRAMS
+    }
+
+    data class LastUpdatedTime(val timeString: String): HomeTimeDataItem() {
+        override val itemId = HomeTimeDataItemTypes.LAST_UPDATED_TIME_HEADER
     }
 
     abstract val itemId: Int

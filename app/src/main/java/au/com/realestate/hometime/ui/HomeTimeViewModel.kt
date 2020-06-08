@@ -13,6 +13,7 @@ import au.com.realestate.hometime.models.TramStop
 import au.com.realestate.hometime.network.ApiStatus
 import au.com.realestate.hometime.repo.HomeTimeRepo
 import au.com.realestate.hometime.repo.HomeTimeRepoType
+import au.com.realestate.hometime.utils.TimeUtils
 import kotlinx.coroutines.*
 import java.lang.Exception
 import kotlin.coroutines.CoroutineContext
@@ -71,8 +72,9 @@ class HomeTimeViewModel(
         launch {
             try {
                 _apiStatus.value = ApiStatus(ApiStatus.State.LOADING, null)
+                val timeFetched = TimeUtils.currentTime()
                 val tramsDataResponse = fetchTrams(tramStops).awaitAll()
-                _tramData.value = constructItems(tramsDataResponse)
+                _tramData.value = constructItems(timeFetched, tramsDataResponse)
                 _apiStatus.value = ApiStatus(ApiStatus.State.DONE, null)
 
             } catch (e: Exception) {
@@ -84,13 +86,15 @@ class HomeTimeViewModel(
 
     private fun fetchTrams(tramStops: List<TramStop>) = tramStops.map { async { repo.getTrams(it.id, tramNumber) } }
 
-    private fun constructItems(data: List<ApiResponse<Tram>>): List<HomeTimeDataItem> {
-        return tramStops.zip(data).map {(tramStop, trams) ->
+    private fun constructItems(timeString: String, data: List<ApiResponse<Tram>>): List<HomeTimeDataItem> {
+        val tramItems = tramStops.zip(data).map {(tramStop, trams) ->
             constructTramStopAndTramItems(
                 tramStop,
                 trams
             )
         }.flatten()
+        val lastUpdatedItem = HomeTimeDataItem.LastUpdatedTime(timeString)
+        return listOf(lastUpdatedItem).plus(tramItems)
     }
 
     private fun constructTramStopAndTramItems(
