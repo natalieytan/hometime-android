@@ -91,23 +91,7 @@ Rightfully, if we inspected the error messages, we should include handling of cl
 * Used this as a chance to experiment with corotuines
 * Using coroutines, allows easily asynchronously calling multiple network requests (e.g. north & south trams), and fail immediately to the catch block if any of the network requests fail 
 * Using coroutines also allows cancellation the network calls if the ViewModel is destroyed, via job cancellation in the onCleared ViewModel lifecycle
-* Unfortunately the ViewModel is now looking a bit chunky, because it now has he responsibility of owning the job and the scope
-* For example, I have to run `tramStops.map { async { repo.getTrams(it.id, tramNumber) } }` in the ViewModel, because it needs to run within a coroutine scope.
-* Due to this pattern, the ViewModel is also handling the APIStatus errors, which ideally would not be its responsibility
-* Ideally would have been nice to delegate wrapping the response errors to repo and have a wrapper class for the response
-e.g.
-```kotlin
-sealed class Resource<T>(
-   val data: T? = null,
-   val message: String? = null
-) {
-   class Success<T>(data: T) : Resource<T>(data)
-   class Loading<T>(data: T? = null) : Resource<T>(data)
-   class Error<T>(message: String, data: T? = null) : Resource<T>(data, message)
-}
-```
-* I am currently unsure how to implement the above pattern cleanly using coroutines in the ViewModel, without losing the ability able to asynchronously fetch multiple requests and have an early exit should one of the requests fail.
-* This has been a learning experience & I am sure there is room for improvement in refactoring the architecture, as I continue to learn more
+* With the new coroutine pattern, I'm still trying to discover what is the best architectural pattern & how to write unite tests for the repo & ViewModel. Stay tuned!
 
 ## App previews
 ![Trams Data - Vertical](./docs/assets/vertical_trams_data.png)
