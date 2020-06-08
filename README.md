@@ -58,9 +58,9 @@ Rightfully, if we inspected the error messages, we should include handling of cl
 
 ### 4. What about dependency injection?
 * Ideally, the ViewModel should not have to know about the activity's context
-* However, we run into the case of needing the context to retrieve string resources, as well as sharedPreferences
+* However, we often run into the case of needing the context to retrieve string resources, as well as sharedPreferences
 * To work around this I have exposed the application context in a companion object.
-* If exposing the application context alone, no longer suits our needs, there are alternative DI frameworks (e.g. Dagger, Koin) that I may look into
+* If exposing the application context alone, no longer suits our needs, there are DI frameworks (e.g. Dagger, Koin) that could be used instead
 
 ### 5. Working with time
 * To provide helpful information as suggested by the brief `show how far away that is from the current time (eg. 9:23 am (3 min))`, requires calculation of time difference between the user's current system time and the time presented by the server
@@ -88,12 +88,12 @@ Rightfully, if we inspected the error messages, we should include handling of cl
 * When the ListAdapter is passed the DiffUtil callback, able to get nice animations & efficient updates to the recyclerView for free (rather than re-rendering the entire list via notifyDataSetChanged)
 
 ### Coroutines
-* Used this as a chance to experiment with Corotuines
-* Nice to be able to asynchronously call multiple network requests (e.g. north & south trams), and fail immediately to catch block if any of the network requests fail 
-* Nice to be able to cancel the network calls if the viewmodel is destroyed in the onCleared lifecycle
-* ViewModel is now looking a bit chunky, because it now has he responsibility of owning the job and the scope
-* I have to run `tramStops.map { async { repo.getTrams(it.id, tramNumber) } }` in the ViewModel, because it needs to run within a coroutine scope.
-* ViewModel is also handling the APIResponse Errors
+* Used this as a chance to experiment with corotuines
+* Using coroutines, allows easily asynchronously calling multiple network requests (e.g. north & south trams), and fail immediately to the catch block if any of the network requests fail 
+* Using coroutines also allows cancellation the network calls if the ViewModel is destroyed, via job cancellation in the onCleared ViewModel lifecycle
+* Unfortunately the ViewModel is now looking a bit chunky, because it now has he responsibility of owning the job and the scope
+* For example, I have to run `tramStops.map { async { repo.getTrams(it.id, tramNumber) } }` in the ViewModel, because it needs to run within a coroutine scope.
+* Due to this pattern, the ViewModel is also handling the APIStatus errors, which ideally would not be its responsibility
 * Ideally would have been nice to delegate wrapping the response errors to repo and have a wrapper class for the response
 e.g.
 ```kotlin
@@ -106,14 +106,8 @@ sealed class Resource<T>(
    class Error<T>(message: String, data: T? = null) : Resource<T>(data, message)
 }
 ```
-* Not sure how to implement the above pattern cleanly using coroutines in the ViewModel, without losing being able to asynchronously fetch multiple requests with early exit should one fail.
-* This has been a learning experience & I am sure there is room for improvement in refactoring the architecture, as I learn more
-
-### To inject timeUtils or not to inject?
-* I'm still thinking about it
-
-### Where are my unit tests?
-* 🙈
+* I am currently unsure how to implement the above pattern cleanly using coroutines in the ViewModel, without losing the ability able to asynchronously fetch multiple requests and have an early exit should one of the requests fail.
+* This has been a learning experience & I am sure there is room for improvement in refactoring the architecture, as I continue to learn more
 
 ## App previews
 ![Trams Data - Vertical](./docs/assets/vertical_trams_data.png)
