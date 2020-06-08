@@ -10,13 +10,12 @@ import au.com.realestate.hometime.config.TramsConfig
 import au.com.realestate.hometime.models.ApiResponse
 import au.com.realestate.hometime.models.Tram
 import au.com.realestate.hometime.models.TramStop
-import au.com.realestate.hometime.network.ApiStatus
+import au.com.realestate.hometime.network.DataResponse
 import au.com.realestate.hometime.repo.HomeTimeRepo
 import au.com.realestate.hometime.repo.HomeTimeRepoType
 import au.com.realestate.hometime.utils.TimeUtility
 import au.com.realestate.hometime.utils.TimeUtils
 import kotlinx.coroutines.*
-import java.lang.Exception
 import kotlin.coroutines.CoroutineContext
 
 class HomeTimeViewModelFactory : ViewModelProvider.Factory {
@@ -38,13 +37,13 @@ class HomeTimeViewModel(
     private val timeUtil: TimeUtility
 ) :
     ViewModel(), CoroutineScope {
-    private val _tramData = MutableLiveData<List<HomeTimeDataItem>>()
-    val trams: LiveData<List<HomeTimeDataItem>>
-        get() = _tramData
+    private val _dataResponse = MutableLiveData<DataResponse<out List<ApiResponse<Tram>>>>()
+    val dataResponse: LiveData<DataResponse<out List<ApiResponse<Tram>>>>
+        get() = _dataResponse
 
-    private val _apiStatus = MutableLiveData<ApiStatus>()
-    val apiStatus: LiveData<ApiStatus>
-        get() = _apiStatus
+    private val _homeTimeItems = MutableLiveData<List<HomeTimeDataItem>>()
+    val homeTimeItems: LiveData<List<HomeTimeDataItem>>
+        get() = _homeTimeItems
 
     private var viewModelJob = SupervisorJob()
 
@@ -56,9 +55,9 @@ class HomeTimeViewModel(
     }
 
     fun clear() {
-        _apiStatus.value = ApiStatus(ApiStatus.State.CLEARED, null)
+        _dataResponse.value = DataResponse.Cleared()
         val tramStopAndClearedDataItems = tramStops.map { constructTramStopAndClearedItem(it) }
-        _tramData.value = tramStopAndClearedDataItems.flatten()
+        _homeTimeItems.value = tramStopAndClearedDataItems.flatten()
     }
 
     fun refresh() {
@@ -73,24 +72,22 @@ class HomeTimeViewModel(
 
     private fun getTrams() {
         launch {
-            try {
-                _apiStatus.value = ApiStatus(ApiStatus.State.LOADING, null)
-                val timeFetched = timeUtil.formattedCurrentDateTimeString()
-                val tramsDataResponse = fetchTrams(tramStops).awaitAll()
-                _tramData.value = constructItems(timeFetched, tramsDataResponse)
-                _apiStatus.value = ApiStatus(ApiStatus.State.DONE, null)
-
-            } catch (e: Exception) {
-                _tramData.value = emptyList()
-                _apiStatus.value = ApiStatus(ApiStatus.State.ERROR, e.message)
+            _dataResponse.value = DataResponse.Loading()
+            val timeFetched = timeUtil.formattedCurrentDateTimeString()
+            val dataResponse = repo.getTramsForTramStops(tramStops, tramNumber)
+            _dataResponse.value = dataResponse
+            val homeTimeItems = dataResponse.data?.let {
+                constructItems(timeFetched, it)
             }
+            _homeTimeItems.value = homeTimeItems ?: emptyList()
         }
     }
 
-    private fun fetchTrams(tramStops: List<TramStop>) = tramStops.map { async { repo.getTrams(it.id, tramNumber) } }
-
-    private fun constructItems(timeString: String, data: List<ApiResponse<Tram>>): List<HomeTimeDataItem> {
-        val tramItems = tramStops.zip(data).map {(tramStop, trams) ->
+    private fun constructItems(
+        timeString: String,
+        data: List<ApiResponse<Tram>>
+    ): List<HomeTimeDataItem> {
+        val tramItems = tramStops.zip(data).map { (tramStop, trams) ->
             constructTramStopAndTramItems(
                 tramStop,
                 trams

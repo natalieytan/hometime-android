@@ -22,16 +22,22 @@ private val retrofit = Retrofit.Builder()
     .baseUrl(BASE_URL)
     .build()
 
-data class ApiStatus(val state: State, val message: String?) {
-    enum class State { LOADING, ERROR, DONE, CLEARED }
-}
-
 interface TramTrackerApiService {
     @GET("TramTracker/RestService/GetDeviceToken/?aid=TTIOSJSON&devInfo=HomeTimeAndroid")
     suspend fun getToken(): ApiResponse<Token>
 
     @GET("TramTracker/RestService/GetNextPredictedRoutesCollection/{stopId}/{tramNo}/false/?aid=TTIOSJSON&cid=2")
     suspend fun getTrams(@Path("stopId") stopId: Int, @Path("tramNo") tramNo: Int, @Query("tkn") token: String): ApiResponse<Tram>
+}
+
+sealed class DataResponse<T>(
+    val data: T? = null,
+    val message: String? = null
+) {
+    class Success<T>(data: T) : DataResponse<T>(data)
+    class Loading<T>(data: T? = null) : DataResponse<T>(data)
+    class Cleared<T>(data: T? = null): DataResponse<T>(data)
+    class Error<T>(data: T? = null, message: String? = null) : DataResponse<T>(data, message)
 }
 
 object TramTrackerApi {

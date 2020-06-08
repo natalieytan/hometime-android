@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import au.com.realestate.hometime.R
-import au.com.realestate.hometime.network.ApiStatus
+import au.com.realestate.hometime.network.DataResponse
 import kotlinx.android.synthetic.main.activity_home_time.*
 
 class HomeTimeActivity : AppCompatActivity() {
@@ -26,10 +26,10 @@ class HomeTimeActivity : AppCompatActivity() {
         val adapter = HomeTimeAdapter()
         recyclerViewHomeTime.adapter = adapter
 
-        viewModel.apiStatus.observe(this, Observer { apiStatus ->
-            when (apiStatus.state) {
-                ApiStatus.State.LOADING -> {
-                    when(swipeRefreshLayout.isRefreshing) {
+        viewModel.dataResponse.observe(this, Observer { dataResponse ->
+            when (dataResponse) {
+                is DataResponse.Loading -> {
+                    when (swipeRefreshLayout.isRefreshing) {
                         true -> {
                             progressBarHomeTime.visibility = View.GONE
                             viewError.visibility = View.GONE
@@ -44,14 +44,14 @@ class HomeTimeActivity : AppCompatActivity() {
                         }
                     }
                 }
-                ApiStatus.State.ERROR -> {
+                is DataResponse.Error -> {
                     progressBarHomeTime.visibility = View.GONE
                     viewError.visibility = View.VISIBLE
                     recyclerViewHomeTime.visibility = View.GONE
                     swipeRefreshLayout.visibility = View.GONE
                     swipeRefreshLayout.isRefreshing = false
                 }
-                ApiStatus.State.DONE, ApiStatus.State.CLEARED -> {
+                is DataResponse.Success, is DataResponse.Cleared -> {
                     progressBarHomeTime.visibility = View.GONE
                     viewError.visibility = View.GONE
                     recyclerViewHomeTime.visibility = View.VISIBLE
@@ -61,7 +61,7 @@ class HomeTimeActivity : AppCompatActivity() {
             }
         })
 
-        viewModel.trams.observe(this, Observer { trams ->
+        viewModel.homeTimeItems.observe(this, Observer { trams ->
             adapter.submitList(trams)
         })
     }
