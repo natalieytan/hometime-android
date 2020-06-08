@@ -55,6 +55,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            style="@style/AppTheme.AccentButton"
             android:text="@string/retry_button" />
     </LinearLayout>
 
@@ -84,13 +85,15 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:weightSum="2"
+        android:showDividers="middle"
+        android:divider="@drawable/empty_small_horizontal_divider"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintEnd_toStartOf="parent">
 
         <Button
             android:id="@+id/buttonClear"
-            style="?android:attr/buttonBarButtonStyle"
+            style="@style/AppTheme.BorderlessDarkButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -98,7 +101,7 @@
 
         <Button
             android:id="@+id/buttonRefresh"
-            style="?android:attr/buttonBarButtonStyle"
+            style="@style/AppTheme.BorderlessDarkButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
