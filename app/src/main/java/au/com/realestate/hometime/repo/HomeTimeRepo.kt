@@ -37,7 +37,7 @@ class HomeTimeRepo(private val tokenDataStore: TokenDataStore, private val apiSe
     }
 
     private suspend fun getAndCacheToken(): String {
-        when(val token = apiService.getToken().responseObject?.firstOrNull()?.value) {
+        when(val token = apiService.getToken().responseObject.firstOrNull()?.value) {
             null -> throw IOException("Unable to fetch token")
             else -> {
                 tokenDataStore.setTramTrackerToken(token)

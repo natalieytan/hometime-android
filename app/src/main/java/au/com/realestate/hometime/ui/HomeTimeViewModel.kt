@@ -98,14 +98,14 @@ class HomeTimeViewModel(
         tramResponse: ApiResponse<Tram>
     ): List<HomeTimeDataItem> {
         val tramHeader = HomeTimeDataItem.TramStopHeaderItem(tramStop)
-        val tramItems = tramResponse.responseObject?.let { tramsData ->
+        val tramItems = tramResponse.responseObject.let { tramsData ->
             tramsData.map {
                 HomeTimeDataItem.TramDataItem(it)
             }
         }
 
-        return when (tramItems?.size) {
-            null, 0 -> listOf(tramHeader).plus(
+        return when (tramItems.size) {
+            0 -> listOf(tramHeader).plus(
                 HomeTimeDataItem.NoTramsItem(
                     HomeTimeApplication.context.getString(
                         R.string.trams_not_found
