@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".ui.HomeTimeActivity">
 
-    <androidx.core.widget.ContentLoadingProgressBar
+    <ProgressBar
         android:id="@+id/progressBarHomeTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
