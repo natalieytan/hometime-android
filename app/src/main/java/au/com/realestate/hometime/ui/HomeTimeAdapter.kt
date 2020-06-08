@@ -6,10 +6,8 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import au.com.realestate.hometime.models.Tram
 import au.com.realestate.hometime.models.TramStop
-import au.com.realestate.hometime.utils.TimeUtils.dateString
-import au.com.realestate.hometime.utils.TimeUtils.formattedDisplay
-import au.com.realestate.hometime.utils.TimeUtils.timeDifferenceFromNowInMinutes
-import au.com.realestate.hometime.utils.TimeUtils.timeFromUnixTime
+import au.com.realestate.hometime.utils.TimeUtility
+import au.com.realestate.hometime.utils.TimeUtils
 
 class HomeTimeAdapter :
     ListAdapter<HomeTimeDataItem, RecyclerView.ViewHolder>(HomeTimeDiffCallBack()) {
@@ -79,26 +77,31 @@ sealed class HomeTimeDataItem {
         val stopName = tramStop.name
     }
 
-    class TramDataItem(tram: Tram) : HomeTimeDataItem() {
+    class TramDataItem(tram: Tram, timeUtil: TimeUtility = TimeUtils) : HomeTimeDataItem() {
         override val itemId = HomeTimeDataItemTypes.TRAM_DATA
         override val dataId = tram.vehicleNo
 
-        private val currentTimeEpochSeconds = tram.predictedArrival?.let { timeFromUnixTime(it) }
-        private val minutesAway = currentTimeEpochSeconds?.let { timeDifferenceFromNowInMinutes(it) }
-
+        private val predictedArrivalInEpochMilliseconds =
+            tram.predictedArrival?.let { timeUtil.timeInMillisecondsFromUnixTime(it) }
 
         val tramId = "#${tram.vehicleNo?.toString()?.padStart(3, '0')}"
         val tramRoute = tram.routeNo
         val destination = tram.destination
-        val displayArrivalTime = minutesAway?.let { formattedDisplay(it) }
-        val arrivalDate = currentTimeEpochSeconds?.let { dateString(it) }
+        val displayArrivalTime =
+            predictedArrivalInEpochMilliseconds?.let {
+                timeUtil.formattedTimeDifferenceFromCurrentTime(
+                    it
+                )
+            }
+        val arrivalDate =
+            predictedArrivalInEpochMilliseconds?.let { timeUtil.formattedDateTimeString(it) }
     }
 
     data class NoTramsItem(val reason: String) : HomeTimeDataItem() {
         override val itemId = HomeTimeDataItemTypes.NO_TRAMS
     }
 
-    data class LastUpdatedTime(val timeString: String): HomeTimeDataItem() {
+    data class LastUpdatedTime(val timeString: String) : HomeTimeDataItem() {
         override val itemId = HomeTimeDataItemTypes.LAST_UPDATED_TIME_HEADER
     }
 

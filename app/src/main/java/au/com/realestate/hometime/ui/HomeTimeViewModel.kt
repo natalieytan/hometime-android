@@ -13,6 +13,7 @@ import au.com.realestate.hometime.models.TramStop
 import au.com.realestate.hometime.network.ApiStatus
 import au.com.realestate.hometime.repo.HomeTimeRepo
 import au.com.realestate.hometime.repo.HomeTimeRepoType
+import au.com.realestate.hometime.utils.TimeUtility
 import au.com.realestate.hometime.utils.TimeUtils
 import kotlinx.coroutines.*
 import java.lang.Exception
@@ -24,7 +25,8 @@ class HomeTimeViewModelFactory : ViewModelProvider.Factory {
         return HomeTimeViewModel(
             HomeTimeRepo.instance,
             TramsConfig.TRAM_NUMBER,
-            TramsConfig.TRAM_STOPS
+            TramsConfig.TRAM_STOPS,
+            TimeUtils
         ) as T
     }
 }
@@ -32,7 +34,8 @@ class HomeTimeViewModelFactory : ViewModelProvider.Factory {
 class HomeTimeViewModel(
     private val repo: HomeTimeRepoType,
     private val tramNumber: Int,
-    private val tramStops: List<TramStop>
+    private val tramStops: List<TramStop>,
+    private val timeUtil: TimeUtility
 ) :
     ViewModel(), CoroutineScope {
     private val _tramData = MutableLiveData<List<HomeTimeDataItem>>()
@@ -72,7 +75,7 @@ class HomeTimeViewModel(
         launch {
             try {
                 _apiStatus.value = ApiStatus(ApiStatus.State.LOADING, null)
-                val timeFetched = TimeUtils.currentTime()
+                val timeFetched = timeUtil.formattedCurrentDateTimeString()
                 val tramsDataResponse = fetchTrams(tramStops).awaitAll()
                 _tramData.value = constructItems(timeFetched, tramsDataResponse)
                 _apiStatus.value = ApiStatus(ApiStatus.State.DONE, null)
