@@ -84,7 +84,7 @@ sealed class HomeTimeDataItem {
         private val predictedArrivalInEpochMilliseconds =
             tram.predictedArrival?.let { timeUtil.timeInMillisecondsFromUnixTime(it) }
 
-        val tramId = "#${tram.vehicleNo?.toString()?.padStart(3, '0')}"
+        val tramId = "#${tram.vehicleNo?.toString()?.padStart(4, '0')}"
         val tramRoute = tram.routeNo
         val destination = tram.destination
         val displayArrivalTime =
